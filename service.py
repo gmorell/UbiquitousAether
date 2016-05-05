@@ -4,9 +4,15 @@ from twisted.internet import task
 from twisted.web import resource
 from twisted.web import server
 
+from zeroconf import ServiceInfo, Zeroconf
+
 import hashlib
 import json
+import netifaces
+import os
 import requests
+import sys
+import socket
 
 class MFIDevice(object):
     def __init__(self, config_directive):
@@ -228,13 +234,14 @@ class ProgramListGrouped(resource.Resource):
 
 class UbiquitousService(service.Service):
 
-    def __init__(self, devices, update_freq=5.0):
+    def __init__(self, devices, discovery_name, port, update_freq=5.0):
         self.devices = devices
         self.update_freq = update_freq
 
         # start the update loop
         self.loop = task.LoopingCall(self.devices_update)
         self.loop.start(self.update_freq)
+        self.announce(discovery_name, port)
 
     def devices_update(self):
         [d.update_port_status() for d in self.devices]
@@ -258,6 +265,37 @@ class UbiquitousService(service.Service):
         print l
         return l
 
+    def announce(self, discovery_name, port):
+        self.zeroconf = Zeroconf()
+        self.zconfigs = []
+        for i in netifaces.interfaces():
+            if i.startswith("lo"):
+                # remove loopback from announce
+                continue
+            if i.startswith("veth"):
+                # remove docker interface from announce
+                continue
+
+            addrs = netifaces.ifaddresses(i)
+            if addrs.keys() == [17]:
+                continue
+            print addrs
+            for a in addrs[netifaces.AF_INET]:
+                print a
+                info_desc = {'path': '/progs/', 'name': discovery_name}
+                config = ServiceInfo("_http._tcp.local.",
+                               "%s.%s.%s.Aether.Ubiquitous._http._tcp.local." % (socket.gethostname(),i, port),
+                               socket.inet_aton(a['addr']), port, 0, 0,
+                               info_desc, "aether-autodisc-0.local.")
+
+                self.zeroconf.register_service(config)
+                self.zconfigs.append(config)
+
+    def stopService(self):
+        for c in self.zconfigs:
+            self.zeroconf.unregister_service(c)
+        self.zeroconf.close()
+
     def getResources(self):
         r = resource.Resource()
         r.putChild("", r)
@@ -278,11 +316,21 @@ try:
 except:
     raise Exception("No Configuration Created, please see config_example.py for details")
 
+if os.environ.has_key("UBIQUITOUSDISCOVERYNAME"):
+    discovery_name = os.environ.get("UBIQUITOUSDISCOVERYNAME")
+else:
+    discovery_name = "UBIQUITOUS"
+    sys.stderr.write("NO NAME SET, USING UBIQUITOUS")
+
+lambent_port = int(os.environ.get("LAMBENTPORT", 8780))
 
 application = service.Application('ubiquitous_aether')  # , uid=1, gid=1)
 devices = [MFIDevice(d) for d in config.DEVICES]
-uservice = UbiquitousService(devices)
+uservice = UbiquitousService(
+    devices,
+    port=lambent_port,
+    discovery_name=discovery_name
+)
 serviceCollection = service.IServiceCollection(application)
 uservice.setServiceParent(serviceCollection)
-# internet.TCPServer(8660, s.getLightFactory()).setServiceParent(serviceCollection)
-internet.TCPServer(8680, server.Site(uservice.getResources())).setServiceParent(serviceCollection)
+internet.TCPServer(lambent_port, server.Site(uservice.getResources())).setServiceParent(serviceCollection)
