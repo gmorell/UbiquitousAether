@@ -282,11 +282,11 @@ class UbiquitousService(service.Service):
             print addrs
             for a in addrs[netifaces.AF_INET]:
                 print a
-                info_desc = {'path': '/progs/', 'name': discovery_name}
-                config = ServiceInfo("_http._tcp.local.",
-                               "%s.%s.%s.Aether.Ubiquitous._http._tcp.local." % (socket.gethostname(),i, port),
+                info_desc = {'path': '/progs_grp/', 'name': discovery_name}
+                config = ServiceInfo("_aether._tcp.local.",
+                               "%s_%s_%s_ubiquitous._aether._tcp.local." % (socket.gethostname(),i, port),
                                socket.inet_aton(a['addr']), port, 0, 0,
-                               info_desc, "aether-autodisc-0.local.")
+                               info_desc)# , "aether-autodisc-0.local.")
 
                 self.zeroconf.register_service(config)
                 self.zconfigs.append(config)
