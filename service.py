@@ -32,6 +32,11 @@ class MFIDevice(object):
         else:
             self.name = config_directive['name']
 
+        if "name_tri" not in config_directive:
+            self.namet = self.name[0:3]
+        else:
+            self.namet = config_directive['name_tri']
+
         if "sensors" in config_directive:
             self.sensor_mapping = config_directive['sensors']
         else:
@@ -114,13 +119,19 @@ class MFIDevice(object):
         if state['output'] == 1:
             output = ['#609809', '#609809']
         else:
-            output = ["#993400"]
+            output = ['#993400']
 
         return output
 
     def update_port_status(self):
         self.status = self.get_port_status()
         self.parsed_status = self.clean_port_status()
+
+    def status_for_status_ep(self):
+        # print [(i[0],i[1]['output']) for i in self.parsed_status.items()]
+        states = [i[1]['output'] for i in self.parsed_status.items()]
+        strung = "%s:%s" % (self.namet, "".join([str(i) for i in states]))
+        return strung
 
     def login(self):
         # do the login flow
@@ -218,19 +229,19 @@ class ProgramListGrouped(resource.Resource):
 
     def render_GET(self, request):
         request.setHeader("Content-Type", "application/json; charset=utf-8")
-        # grpd = {}
-        # for k,v in self.service.available_progs.iteritems():
-        #     print k
-        #     grouping_val = v.get('grouping')
-        #     if grouping_val and grouping_val in grpd:
-        #         grpd[grouping_val].append(k)
-        #     elif grouping_val:
-        #         grpd[grouping_val] = [k]
-        #
-        # status = sorted(self.service.available_progs.keys())
         retval = json.dumps({"available_grouped": self.service.devices_as_prg_grp()})
         return retval
 
+
+class ServiceStatus(resource.Resource):
+    def __init__(self, service):
+        resource.Resource.__init__(self)
+        self.service = service
+
+    def render_GET(self, request):
+        request.setHeader("Content-Type", "application/json; charset=utf-8")
+        retval = json.dumps({"running": ";".join([s.status_for_status_ep() for s in self.service.devices])})
+        return retval
 
 class UbiquitousService(service.Service):
 
@@ -308,6 +319,9 @@ class UbiquitousService(service.Service):
 
         plg = ProgramListGrouped(self)
         r.putChild("progs_grp", plg)
+
+        st = ServiceStatus(self)
+        r.putChild("status", st)
 
         return r
 #startup
