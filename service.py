@@ -324,11 +324,7 @@ class UbiquitousService(service.Service):
         r.putChild("status", st)
 
         return r
-#startup
-try:
-    import config
-except:
-    raise Exception("No Configuration Created, please see config_example.py for details")
+
 
 if os.environ.has_key("UBIQUITOUSDISCOVERYNAME"):
     discovery_name = os.environ.get("UBIQUITOUSDISCOVERYNAME")
@@ -336,15 +332,31 @@ else:
     discovery_name = "UBIQUITOUS"
     sys.stderr.write("NO NAME SET, USING UBIQUITOUS")
 
-lambent_port = int(os.environ.get("LAMBENTPORT", 8780))
+if os.environ.has_key("UBIQUITOUSCONFIG"):
+    discovery_name = os.environ.get("UBIQUITOUSCONFIG")
+    sys.stderr.write("NO CONFIG OVERRIDE SET, USING %s.py", discovery_name)
+    try:
+        __import__(discovery_name)
+    except:
+        raise Exception("Defined configuration %(name)s does not exist", {"name":discovery_name})
+else:
+    discovery_name = "UBIQUITOUSCONFIG"
+    sys.stderr.write("NO CONFIG OVERRIDE SET, USING config.py")
+    #startup
+    try:
+        import config
+    except:
+        raise Exception("No Configuration Created, please see config_example.py for details")
+
+aether_port = int(os.environ.get("UBIQUITOUSPORT", 8780))
 
 application = service.Application('ubiquitous_aether')  # , uid=1, gid=1)
 devices = [MFIDevice(d) for d in config.DEVICES]
 uservice = UbiquitousService(
     devices,
-    port=lambent_port,
+    port=aether_port,
     discovery_name=discovery_name
 )
 serviceCollection = service.IServiceCollection(application)
 uservice.setServiceParent(serviceCollection)
-internet.TCPServer(lambent_port, server.Site(uservice.getResources())).setServiceParent(serviceCollection)
+internet.TCPServer(aether_port, server.Site(uservice.getResources())).setServiceParent(serviceCollection)
