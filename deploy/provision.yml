@@ -1,0 +1,48 @@
+---
+- hosts: all
+  vars:
+    aether_home: /opt/UbiquitousAether
+    aether_user: aether
+
+  remote_user: root
+  tasks:
+#  - name: Get all the supporting stuff from apt that the raspbian install may/may not have
+#    apt: pkg={{item}} state=installed update_cache=yes
+#    with_items:
+#       - ca-certificates
+#       - curl
+#       - git
+#       - python-dev
+#       - python-pip
+#       - python-setuptools
+#       - python-virtualenv
+#       - ntpdate
+#       - screen
+#       - supervisor
+#
+#  - name: User anyone?
+#    user: name={{ aether_user }} shell=/bin/bash
+#
+  - name: Make sure we have a home
+    file: path={{ aether_home }} state=directory mode=744 owner={{ aether_user }} recurse=yes
+#
+  - name: Git Clone
+    git: repo=https://github.com/gmorell/UbiquitousAether.git dest={{ aether_home }} update=yes
+#
+#  - name: PIP
+#    pip:
+#      requirements: /opt/UbiquitousAether/requirements.txt
+#      virtualenv: /opt/UbiquitousAether/venv/
+#      virtualenv_python: python2.7
+#
+#
+#  - debug: msg="PID:{{ pid }}"
+
+  - name: write ubiq config
+    template: src=ubiquitous_config.jinja2 dest=/opt/UbiquitousAether/_{{ pid|default("") }}_config.py mode=0644
+
+  - name: write lambent supervisor config
+    template: src=ubiquitous_supervisor_tmpl.jinja2 dest=/etc/supervisor/conf.d/ubiquitous_{{ pid|default("") }}.conf mode=0644
+
+  - name: restart supervisor
+    service: name=supervisor state=restarted

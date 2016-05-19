@@ -1,0 +1,43 @@
+[living_controller]
+pid: 8780
+service_config:
+    - living:
+        host: "192.168.1.2"
+        username: "ubnt"
+        password: "ubnt"
+        sensors:
+            1:
+                name: "Lamp"
+            2:
+                name: None
+            3:
+                name: "TV"
+    - dining:
+        host: "192.168.1.3"
+        username: "ubnt"
+        password: "ubnt"
+        sensors:
+            1:
+                name: "Lamp"
+                editable: False
+            2:
+                name: "Induction Table"
+
+    {
+        "host":"192.168.1.1",
+        "username": "ubnt",
+        "password": "ubnt",
+        "name": "Living", # no spaces pls, use
+        "sensors":{
+            1: {
+                "name":"Lamp"
+            },
+            2: {
+                "name": None # <- will just show 2
+            },
+            3:{
+                "name":"TV"
+            },
+            # etc
+        }
+    },

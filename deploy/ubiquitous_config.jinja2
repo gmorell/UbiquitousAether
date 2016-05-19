@@ -1,0 +1,8 @@
+{#DEVICES = [#}
+{#{% for s in service_config %}#}
+{#    {% for k,v in s.iteritems() %}#}
+{#        {{ k,v }}#}
+{#    {% endfor %}#}
+{#{% endfor %}]#}
+
+DEVICES = {{ service_config|pprint }}

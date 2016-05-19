@@ -1,0 +1,17 @@
+[program:ubiquitous_{{ pid|default("") }}]
+directory={{ aether_home }}
+command=twistd -ny service.py --pidfile {{ aether_home }}/twistd_{{ pid|default("") }}.pid2
+user={{ aether_user }}
+autostart=true
+autorestart=true
+redirect_stderr=True
+environment=UBIQUITOUSPORT={{ pid }},UBIQUITOUSCONFIG=_{{ pid|default("") }}_config
+# this is likely to be installed on a pi, so we dont want to barn through all the available space
+stderr_logfile = /tmp/aether_ubiquitous_{{ pid|default("") }}.stderr.supervisor.log
+stdout_logfile = /tmp/aether_ubiquitous_{{ pid|default("") }}.stdout.supervisor.log
+stdout_logfile_maxbytes=1MB
+stdout_logfile_backups=3
+stdout_capture_maxbytes=1MB
+stderr_logfile_maxbytes=1MB
+stderr_logfile_backups=3
+stderr_capture_maxbytes=1MB
