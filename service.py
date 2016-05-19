@@ -6,6 +6,7 @@ from twisted.web import server
 
 from zeroconf import ServiceInfo, Zeroconf
 
+import importlib
 import hashlib
 import json
 import netifaces
@@ -336,9 +337,9 @@ if os.environ.has_key("UBIQUITOUSCONFIG"):
     discovery_name = os.environ.get("UBIQUITOUSCONFIG")
     sys.stderr.write("NO CONFIG OVERRIDE SET, USING %s.py" % discovery_name)
     try:
-        __import__(discovery_name)
+        config = importlib.import_module(discovery_name)
     except:
-        raise Exception("Defined configuration %(name)s does not exist", {"name":discovery_name})
+        raise Exception("Defined configuration %(name)s does not exist" % {"name":discovery_name})
 else:
     discovery_name = "UBIQUITOUSCONFIG"
     sys.stderr.write("NO CONFIG OVERRIDE SET, USING config.py")
