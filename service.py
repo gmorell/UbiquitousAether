@@ -331,23 +331,23 @@ if os.environ.has_key("UBIQUITOUSDISCOVERYNAME"):
     discovery_name = os.environ.get("UBIQUITOUSDISCOVERYNAME")
 else:
     discovery_name = "UBIQUITOUS"
-    sys.stderr.write("NO NAME SET, USING UBIQUITOUS")
+    sys.stderr.write("NO NAME SET, USING UBIQUITOUS\n")
 
 if os.environ.has_key("UBIQUITOUSCONFIG"):
-    discovery_name = os.environ.get("UBIQUITOUSCONFIG")
-    sys.stderr.write("NO CONFIG OVERRIDE SET, USING %s.py" % discovery_name)
+    discovery_name = os.environ.get("UBIQUITOUSCONFIG\n")
     try:
         config = importlib.import_module(discovery_name)
+        sys.stderr.write("CONFIG OVERRIDE SET, USING %s.py" % discovery_name)
     except:
-        raise Exception("Defined configuration %(name)s does not exist" % {"name":discovery_name})
+        raise Exception("Defined configuration %(name)s does not exist\n" % {"name":discovery_name})
 else:
     discovery_name = "UBIQUITOUSCONFIG"
-    sys.stderr.write("NO CONFIG OVERRIDE SET, USING config.py")
+    sys.stderr.write("NO CONFIG OVERRIDE SET, USING config.py \n")
     #startup
     try:
         import config
     except:
-        raise Exception("No Configuration Created, please see config_example.py for details")
+        raise Exception("No Configuration Created, please see config_example.py for details\n")
 
 aether_port = int(os.environ.get("UBIQUITOUSPORT", 8780))
 
