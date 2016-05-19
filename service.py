@@ -334,7 +334,7 @@ else:
 
 if os.environ.has_key("UBIQUITOUSCONFIG"):
     discovery_name = os.environ.get("UBIQUITOUSCONFIG")
-    sys.stderr.write("NO CONFIG OVERRIDE SET, USING %s.py", discovery_name)
+    sys.stderr.write("NO CONFIG OVERRIDE SET, USING %s.py" % discovery_name)
     try:
         __import__(discovery_name)
     except:
