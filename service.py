@@ -334,7 +334,7 @@ else:
     sys.stderr.write("NO NAME SET, USING UBIQUITOUS\n")
 
 if os.environ.has_key("UBIQUITOUSCONFIG"):
-    discovery_name = os.environ.get("UBIQUITOUSCONFIG\n")
+    discovery_name = os.environ.get("UBIQUITOUSCONFIG")
     try:
         config = importlib.import_module(discovery_name)
         sys.stderr.write("CONFIG OVERRIDE SET, USING %s.py" % discovery_name)
