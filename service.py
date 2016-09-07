@@ -117,12 +117,22 @@ class MFIDevice(object):
 
     def single_port_color_return(self, port):
         state = self.parsed_status[port]
-        if state['output'] == 1:
-            output = ['#609809', '#609809']
-        else:
-            output = ['#993400']
 
-        return output
+        # support diff mfi devices
+        if 'output' in state:
+            if state['output'] == 1:
+                output = ['#609809', '#609809']
+            else:
+                output = ['#993400']
+
+            return output
+
+        elif 'state' in state:
+            if state['state']['output']== 1:
+                output = ['#609809', '#609809']
+            else:
+                output = ['#993400']
+            return output
 
     def update_port_status(self):
         self.status = self.get_port_status()
