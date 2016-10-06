@@ -89,7 +89,12 @@ class MFIDevice(object):
         if port in self.sensor_mapping:
             editable = self.sensor_mapping[port].get('editable',True)
             if editable:
-                current = self.parsed_status[port]['output']
+                print "TOGGLR"
+                print self.parsed_status[port]
+                if "output" in self.parsed_status[port]:
+                    current = self.parsed_status[port]['output']
+                elif "state" in self.parsed_status[port]:
+                    current = self.parsed_status[port]['state']['output']
                 if current == 0:
                     target = 1
                 else:
