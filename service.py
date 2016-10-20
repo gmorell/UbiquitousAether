@@ -101,9 +101,10 @@ class MFIDevice(object):
                     target = 0
 
                 try:
-                    requests.put("http://%s/sensors/%i" % (self.host, port), cookies=self.cookie, data={"output":target})
+                    requests.put("http://%s/sensors/%i" % (self.host, port), cookies=self.cookie, data={"output": target})
                 except requests.exceptions.TooManyRedirects:
-                    self.login() # our mfi cookie was expiring
+                    self.login() # our mfi cookie was expiring, re-login and then retry
+                    requests.put("http://%s/sensors/%i" % (self.host, port), cookies=self.cookie, data={"output": target})
                 return "changed"
 
             return "uneditable"
